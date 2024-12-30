@@ -8,7 +8,9 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server.js",
     "client": "cd client && npm run dev",
-    "install-all": "npm install && cd client && npm install"
+    "install-all": "npm install && cd client && npm install",
+    "build": "cd client && npm install && npm run build",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.14.1",
