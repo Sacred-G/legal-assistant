@@ -1,0 +1,139 @@
+{
+  "rating_process": {
+    "calculation_sequence": {
+      "order": [
+        "determine_wpi",
+        "apply_fec",
+        "apply_occupation", 
+        "apply_age_adjustment"
+      ],
+      "rules": {
+        "always_start_with_wpi": true,
+        "round_each_step": true,
+        "show_calculations": true
+      }
+    },
+    "fec_rules": {
+      "post_2013": {
+        "multiplier": 1.4,
+        "application": "multiply WPI by 1.4 before occupation/age"
+      
+      }
+    },
+    "combination_rules": {
+      "general_principle": "combine unless specifically instructed to add",
+      "sequence": [
+        "combine same extremity first",
+        "convert to WPI",
+        "combine largest to smallest"
+      ],
+      "formula": "a + b(1-a) where a is larger value",
+      "when_to_add": {
+        "primary_case": "range of motion for same body part",
+        "exceptions": {
+          "fingers": "combine if added values exceed 100%"
+        }
+      }
+    },
+    "conversion_factors": {
+      "upper_extremity": {
+        "total": "60% WPI",
+        "hand": "90% UEI",
+        "digits": {
+          "thumb": "40% Hand",
+          "index_middle": "20% Hand", 
+          "ring_little": "10% Hand"
+        }
+      },
+      "lower_extremity": {
+        "total": "40% WPI"
+      }
+    },
+    "age_adjustment": {
+      "groups": "5 year increments",
+      "baseline": {
+        "range": "37-41",
+        "adjustment": "no adjustment"
+      },
+      "adjustments": {
+        "younger": "lower ratings",
+        "older": "higher ratings"
+      }
+    },
+    "special_cases": {
+      "spine": {
+        "add_rules": [
+          "Table 15-7 ROM Method",
+          "Range of Motion impairments",
+          "Spinal Disorder"
+        ],
+        "combine_rules": [
+          "spinal disorder with range of motion",
+          "nerve root impairments"
+        ]
+      },
+      "upper_extremity": {
+        "add_rules": [
+          "ROM for same joint",
+          "strength for same joint"
+        ],
+        "combine_rules": [
+          "different evaluation methods",
+          "sensory/motor deficits"
+        ]
+      },
+      "lower_extremity": {
+        "add_rules": [
+          "ROM for same joint"
+        ],
+        "combine_rules": [
+          "arthritis with other impairments",
+          "different evaluation methods"
+        ]
+      }
+    },
+    "rating_string_format": {
+      "components": [
+        {
+          "name": "impairment_number",
+          "format": "XX.XX.XX.XX",
+          "example": "15.01.02.02"
+        },
+        {
+          "name": "wpi",
+          "description": "Whole Person Impairment value"
+        },
+        {
+          "name": "fec_adjustment",
+          "format": "[1.4] "
+        },
+        {
+          "name": "occupation",
+          "format": "groupNumber + variant",
+          "example": "470H"
+        },
+        {
+          "name": "adjusted_rating",
+          "description": "after occupation adjustment"
+        },
+        {
+          "name": "final_rating",
+          "description": "after age adjustment"
+        }
+      ],
+      "example": "15.01.02.02 - 8 - [1.4]11 - 470H - 14 - 12%"
+    },
+    "apportionment": {
+      "requirements": [
+        "must be substantial medical evidence",
+        "specified percentage basis",
+        "separate prior from current disability"
+      ],
+      "application": {
+        "Future_Medical": "total cost over 5 years",
+        "Show_calculation": "display a rating string for each WPI Rating",
+        "Use_Tools": "code_interpreter"
+      }
+    }
+  }
+}
