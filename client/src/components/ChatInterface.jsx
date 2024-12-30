@@ -3,6 +3,16 @@ import axios from 'axios';
 import DOMPurify from 'dompurify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
+import { API_URL } from '../config/api';
+
+// Create axios instance with base URL
+const api = axios.create({
+  baseURL: API_URL,
+  timeout: 300000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 // Function to format AI response with headings and bullets
 const formatAIResponse = (text) => {
@@ -112,7 +122,7 @@ function ChatInterface() {
       console.log('Uploading file to /api/chat/upload...');
 
       try {
-        const response = await axios.post('http://localhost:4006/api/chat/upload', formData, {
+        const response = await api.post('/api/chat/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         console.log('Upload successful, response:', response.data);
@@ -138,7 +148,7 @@ function ChatInterface() {
         // If using assistants service, process the PDF first
         if (provider === 'assistants') {
           console.log('Processing PDF with assistants service...');
-          const assistantsResponse = await axios.post('http://localhost:4006/api/process-pdf', formData, {
+          const assistantsResponse = await api.post('/api/process-pdf', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
           });
           if (assistantsResponse.data.fileId) {
@@ -198,7 +208,7 @@ function ChatInterface() {
 
       console.log('Sending payload with context length:', payload.context.length);
 
-      const response = await axios.post(`http://localhost:4006${endpoint}`, payload);
+      const response = await api.post(endpoint, payload);
       if (response.data.response) {
         const aiMessage = { text: response.data.response, sender: 'ai' };
         setMessages(prev => [...prev, aiMessage]);
@@ -239,7 +249,7 @@ function ChatInterface() {
               if (e.target.value === 'assistants' && file) {
                 const formData = new FormData();
                 formData.append('pdf', file);
-                axios.post('http://localhost:4006/api/process-pdf', formData, {
+                api.post('/api/process-pdf', formData, {
                   headers: { 'Content-Type': 'multipart/form-data' },
                 }).then(response => {
                   if (response.data.fileId) {

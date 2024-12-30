@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
+const path = require('path');
 const openaiService = require('./services/openaiService');
 const anthropicService = require('./services/anthropicService');
 const geminiService = require('./services/geminiService');
@@ -58,14 +59,18 @@ const uploadMiddleware = (req, res) => {
 app.use(handleMulterError);
 
 // Configure CORS with specific options
-app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
-  credentials: true,
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://ai-legal-assistant-mmsq7zuay-sacredgs-projects.vercel.app'] 
+    : ['http://localhost:5173', 'http://127.0.0.1:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  credentials: true,
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
   maxAge: 600
-}));
+};
+
+app.use(cors(corsOptions));
 
 // Additional headers for file uploads
 app.use((req, res, next) => {
@@ -482,14 +487,17 @@ function validatePDRResponse(content) {
 
 const PORT = process.env.PORT || 4006;
 
-try {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  }).on('error', (error) => {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = path.join(__dirname, 'client', 'dist');
+  app.use(express.static(clientBuildPath));
+  
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
   });
-} catch (error) {
-  console.error('Critical server error:', error);
-  process.exit(1);
 }
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log('Environment:', process.env.NODE_ENV);
+});

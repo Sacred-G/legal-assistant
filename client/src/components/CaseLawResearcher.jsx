@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useTheme } from '../contexts/ThemeContext';
+import { API_URL } from '../config/api';
+
+// Create axios instance with base URL
+const api = axios.create({
+  baseURL: API_URL,
+  timeout: 300000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 function CaseLawResearcher() {
   const [isDark, setIsDark] = useState(false);
@@ -22,7 +33,7 @@ function CaseLawResearcher() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post('/api/case-law-research', {
+      const response = await api.post('/case-law-research', {
         query,
         jurisdiction,
         timeFrame,
