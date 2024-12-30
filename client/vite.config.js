@@ -5,10 +5,15 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
     plugins: [react()],
     base: '/',
+    build: {
+        outDir: 'dist',
+        assetsDir: 'assets',
+        sourcemap: true,
+    },
     server: {
         proxy: {
             '/api': {
-                target: 'http://localhost:4006',
+                target: process.env.VITE_API_URL || 'http://localhost:4006',
                 changeOrigin: true,
                 secure: false,
                 ws: true,
@@ -19,7 +24,7 @@ export default defineConfig({
                         console.log('proxy error', err);
                     });
                     proxy.on('proxyReq', (proxyReq, req, res) => {
-                        proxyReq.setHeader('Connection', 'keep-alive');
+                        console.log('proxyReq', req.url);
                     });
                 },
                 timeout: 300000, // 5 minutes
@@ -27,10 +32,7 @@ export default defineConfig({
             }
         },
         cors: true,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
-            'Access-Control-Allow-Headers': 'Content-Type'
-        }
+        port: 3000,
+        strictPort: true,
     }
 })
