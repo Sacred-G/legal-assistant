@@ -1,8 +1,14 @@
 RewriteEngine On
 RewriteBase /
 
-# Handle API requests
-RewriteRule ^api/(.*)$ https://ai-legal-assistant.sbouldin.com/api/$1 [P,L]
+# Handle file uploads first
+RewriteCond %{REQUEST_METHOD} POST
+RewriteCond %{REQUEST_URI} ^/api/chat/upload
+RewriteRule ^(.*)$ http://127.0.0.1:4006/$1 [P,L]
+
+# Handle other API requests
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^api/(.*)$ http://127.0.0.1:4006/api/$1 [P,L]
 
 # If the request is for an existing file or directory, serve it directly
 RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -12,9 +18,13 @@ RewriteRule ^ - [L]
 # For all other requests, serve the React app's index.html
 RewriteRule ^ client/dist/index.html [L]
 
-# Enable reverse proxy settings for API
-ProxyPass /api/ https://ai-legal-assistant.sbouldin.com/api/ timeout=300 Keepalive=On
-ProxyPassReverse /api/ https://ai-legal-assistant.sbouldin.com/api/
+# Enable reverse proxy settings for API with increased limits
+ProxyPass /api/ http://127.0.0.1:4006/api/ timeout=300 Keepalive=On
+ProxyPassReverse /api/ http://127.0.0.1:4006/api/
+
+# Specifically handle file upload endpoint
+ProxyPass /api/chat/upload http://127.0.0.1:4006/api/chat/upload timeout=300 Keepalive=On
+ProxyPassReverse /api/chat/upload http://127.0.0.1:4006/api/chat/upload
 
 # Set headers for proxy
 RequestHeader set X-Forwarded-Proto "https"

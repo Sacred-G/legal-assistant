@@ -1,7 +1,7 @@
 const getApiUrl = () => {
-  // In production, use the production domain
-  if (process.env.NODE_ENV === 'production') {
-    return 'https://ai-legal-assistant.sbouldin.com';
+  // In production, use relative URLs to work with the proxy
+  if (import.meta.env.PROD) {
+    return '';  // Use relative URLs in production
   }
   // In development, point to the local backend server
   return 'http://localhost:4006';
