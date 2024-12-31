@@ -1,0 +1,13 @@
+{
+    "name": "ai-legal-assistant",
+    "description": "AI Legal Assistant Application",
+    "require": {
+        "php": ">=7.4"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "npm install",
+            "npm start"
+        ]
+    }
+}

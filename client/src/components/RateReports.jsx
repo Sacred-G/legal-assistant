@@ -34,7 +34,7 @@ export default function RateReports() {
         formData.append('useAssistant', useAssistant);
 
         try {
-            const uploadResponse = await fetch('/api/process-pdf', {
+            const uploadResponse = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/process-pdf`, {
                 method: 'POST',
                 body: formData,
             });

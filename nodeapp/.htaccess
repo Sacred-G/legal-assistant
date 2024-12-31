@@ -1,0 +1,29 @@
+RewriteEngine On
+RewriteRule ^(.*)$ http://127.0.0.1:4006/$1 [P,L]
+
+# Enable reverse proxy with timeout settings
+ProxyPass / http://127.0.0.1:4006/ timeout=300 Keepalive=On
+ProxyPassReverse / http://127.0.0.1:4006/
+
+# Set headers for proxy
+RequestHeader set X-Forwarded-Proto "https"
+RequestHeader set X-Forwarded-Port "443"
+
+# Increase timeout for large file uploads
+TimeOut 300
+ProxyTimeout 300
+
+# Allow large file uploads
+LimitRequestBody 104857600
+
+# Enable mod_headers
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    Header set Access-Control-Max-Age "3600"
+    
+    # Handle preflight OPTIONS requests
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=200,L]
+</IfModule>
