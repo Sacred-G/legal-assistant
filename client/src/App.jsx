@@ -5,6 +5,7 @@ import ChatInterface from './components/ChatInterface';
 import CaseLawResearcher from './components/CaseLawResearcher';
 import RateReports from './components/RateReports.jsx';
 import LegalDocumentGenerator from './components/LegalDocumentGenerator';
+import LegalDocumentReview from './components/LegalDocumentReview';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 function Navigation() {
@@ -60,6 +61,7 @@ function Navigation() {
             <NavLink to="/case-law">Case Law Researcher</NavLink>
             <NavLink to="/rate-reports">Rate Reports</NavLink>
             <NavLink to="/legal-docs">Legal Document Generator</NavLink>
+            <NavLink to="/doc-review">Legal Document Review</NavLink>
 
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -148,6 +150,13 @@ function Navigation() {
                 >
                   Legal Document Generator
                 </Link>
+                <Link
+                  to="/doc-review"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Legal Document Review
+                </Link>
               </div>
             </motion.div>
           )}
@@ -162,29 +171,80 @@ function AppContent() {
   const location = useLocation();
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}
+    <div className={`h-full ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}
       style={{
         transition: theme.transition || 'background-color 0.2s ease-in-out'
       }}>
       <Navigation />
       <main className="flex-1">
         <div className="max-w-[99%] mx-auto py-2 px-1">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Routes>
-                <Route path="/" element={<ChatInterface />} />
-                <Route path="/case-law" element={<CaseLawResearcher />} />
-                <Route path="/rate-reports" element={<RateReports />} />
-                <Route path="/legal-docs" element={<LegalDocumentGenerator />} />
-              </Routes>
-            </motion.div>
-          </AnimatePresence>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <motion.div
+                  key="chat"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <ChatInterface />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/case-law"
+              element={
+                <motion.div
+                  key="case-law"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <CaseLawResearcher />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/rate-reports"
+              element={
+                <motion.div
+                  key="rate-reports"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <RateReports />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/legal-docs"
+              element={
+                <motion.div
+                  key="legal-docs"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <LegalDocumentGenerator />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/doc-review"
+              element={
+                <motion.div
+                  key="doc-review"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <LegalDocumentReview />
+                </motion.div>
+              }
+            />
+          </Routes>
         </div>
       </main>
     </div>

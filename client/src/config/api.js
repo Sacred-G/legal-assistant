@@ -1,9 +1,13 @@
 const getApiUrl = () => {
+  // Use the environment variable if available
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
   // In production, use relative URLs to work with the proxy
   if (import.meta.env.PROD) {
     return '';  // Use relative URLs in production
   }
-  // In development, point to the local backend server
+  // Fallback to default development URL
   return 'http://localhost:4006';
 };
 

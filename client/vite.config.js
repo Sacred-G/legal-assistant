@@ -30,12 +30,21 @@ export default defineConfig(({ mode }) => {
             '/api': {
                 target: process.env.VITE_API_URL || 'http://localhost:4006',
                 changeOrigin: true,
-                secure: true,
+                secure: false,
                 ws: true,
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                configure: (proxy, options) => {
+                    proxy.on('proxyReq', (proxyReq, req, res) => {
+                        // Handle preflight requests
+                        if (req.method === 'OPTIONS') {
+                            res.setHeader('Access-Control-Allow-Origin', '*');
+                            res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
+                            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+                            res.setHeader('Access-Control-Max-Age', '86400');
+                            res.statusCode = 204;
+                            res.end();
+                            return;
+                        }
+                    });
                 }
             }
         }

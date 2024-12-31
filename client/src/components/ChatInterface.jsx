@@ -122,12 +122,21 @@ function ChatInterface() {
       console.log('Uploading file to /api/chat/upload...');
 
       try {
+        console.log('Starting file upload...');
         const response = await api.post('/api/chat/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            console.log('Upload progress:', Math.round((progressEvent.loaded * 100) / progressEvent.total));
+          }
         });
         console.log('Upload successful, response:', response.data);
 
+        if (!response.data) {
+          throw new Error('No response data received from server');
+        }
+        
         if (!response.data.text || typeof response.data.text !== 'string') {
+          console.error('Invalid response data:', response.data);
           throw new Error('Invalid text content received from server');
         }
 
@@ -158,8 +167,12 @@ function ChatInterface() {
         }
       } catch (error) {
         const errorMessage = error.response?.data?.error || error.message;
-        console.error('Error uploading file:', errorMessage);
-        console.error('Full error:', error);
+        console.error('Error uploading file:', {
+          message: errorMessage,
+          response: error.response?.data,
+          status: error.response?.status,
+          fullError: error
+        });
 
         // Show error message to user
         setMessages(prev => [...prev, {

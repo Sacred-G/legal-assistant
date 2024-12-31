@@ -143,8 +143,68 @@ const LegalDocumentGenerator = () => {
           <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Generated Document:</h3>
           <div className={`${isDark ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-gray-100'} p-4 rounded-md overflow-y-auto transition-colors duration-200`}>
             <div className={`${isDark ? 'bg-gray-900/90 border-gray-700' : 'bg-white border-gray-200'} p-4 rounded-lg shadow-lg border backdrop-blur-sm transition-colors duration-200`}>
-              <div className={`whitespace-pre-wrap font-mono text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                {result}
+              <div 
+                className={`legal-content ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+              >
+                <style>
+                  {`
+                    .legal-content {
+                      font-family: 'Times New Roman', Times, serif;
+                      line-height: 1.6;
+                    }
+                    .legal-content h1 {
+                      font-size: 24px;
+                      font-weight: bold;
+                      margin-bottom: 16px;
+                      border-bottom: 2px solid ${isDark ? '#4a5568' : '#e5e5e5'};
+                      padding-bottom: 8px;
+                    }
+                    .legal-content h2 {
+                      font-size: 20px;
+                      font-weight: bold;
+                      margin-top: 20px;
+                      margin-bottom: 12px;
+                    }
+                    .legal-content h3 {
+                      font-size: 18px;
+                      font-weight: bold;
+                      margin-top: 16px;
+                      margin-bottom: 8px;
+                    }
+                    .legal-content p {
+                      margin-bottom: 12px;
+                    }
+                    .legal-content ul, .legal-content ol {
+                      margin-left: 24px;
+                      margin-bottom: 12px;
+                    }
+                    .legal-content li {
+                      margin-bottom: 6px;
+                    }
+                    .legal-content strong {
+                      font-weight: 600;
+                    }
+                  `}
+                </style>
+                <div 
+                  dangerouslySetInnerHTML={{ 
+                    __html: result
+                      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                      .replace(/^- (.*$)/gm, '<ul><li>$1</li></ul>')
+                      .replace(/^(\d+)\. (.*$)/gm, '<ol><li>$2</li></ol>')
+                      .replace(/\n\n/g, '</p><p>')
+                      .replace(/^(.+)$/gm, function(match) {
+                        if (!match.startsWith('<')) {
+                          return '<p>' + match + '</p>';
+                        }
+                        return match;
+                      })
+                  }} 
+                />
               </div>
             </div>
           </div>

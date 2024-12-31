@@ -25,7 +25,53 @@ app.use((err, req, res, next) => {
 });
 
 // Configure CORS
-app.use(cors());
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = ['http://localhost:5173', 'http://localhost:4006', 'http://localhost:5175'];
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, X-Requested-With, Accept, Origin'
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      // Add headers specifically for file uploads
+      if (req.headers['access-control-request-headers']?.includes('content-type')) {
+        res.setHeader(
+          'Access-Control-Allow-Headers',
+          'Content-Type, Authorization, X-Requested-With, Accept, Origin'
+        );
+      }
+      return res.sendStatus(204);
+    }
+  }
+  
+  next();
+});
+
+// Add specific headers for multipart/form-data requests
+app.use((req, res, next) => {
+  if (req.headers['content-type']?.includes('multipart/form-data')) {
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  }
+  next();
+});
+
+// Log all requests
+app.use((req, res, next) => {
+  console.log('Request:', {
+    method: req.method,
+    url: req.url,
+    headers: req.headers,
+    origin: req.headers.origin
+  });
+  next();
+});
 
 // Body parser middleware
 app.use(express.json());
@@ -48,7 +94,7 @@ const upload = multer({
     fileSize: 100 * 1024 * 1024, // 100MB limit
     fieldSize: 100 * 1024 * 1024 // 100MB limit
   }
-}).single('pdf');
+}).single('file');
 
 // Wrap multer in a promise-based handler with better error handling
 const uploadMiddleware = (req, res) => {
@@ -124,17 +170,21 @@ app.post('/api/chat/upload', async (req, res) => {
 
     console.log('Starting PDF parsing...');
 
+    console.log('Starting PDF text extraction...');
     const pdfData = await Promise.race([
       pdfParse(req.file.buffer, {
         max: 0,
         pagerender: function (pageData) {
+          console.log('Processing page...');
           return pageData.getTextContent().then(textContent => {
-            return textContent.items.map(item => item.str).join(' ');
+            const text = textContent.items.map(item => item.str).join(' ');
+            console.log('Page text extracted, length:', text.length);
+            return text;
           });
         }
       }),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('PDF parsing timeout')), 30000)
+        setTimeout(() => reject(new Error('PDF parsing timeout')), 300000) // 5 minutes timeout
       )
     ]);
 
@@ -421,6 +471,91 @@ app.post('/api/process-pdf', async (req, res) => {
       details: error.message,
       type: error.type,
       code: error.code
+    });
+  }
+});
+
+// Document review endpoint
+app.post('/api/review-document', async (req, res) => {
+  try {
+    console.log('Document review request received', {
+      headers: req.headers,
+      method: req.method
+    });
+    
+    // Use the promise-based upload middleware
+    await new Promise((resolve, reject) => {
+      upload(req, res, (err) => {
+        if (err) {
+          console.error('Upload error:', {
+            error: err,
+            message: err.message,
+            code: err.code,
+            field: err.field
+          });
+          reject(err);
+        } else {
+          console.log('Upload successful');
+          resolve();
+        }
+      });
+    });
+
+    if (!req.file) {
+      console.error('No file in request');
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    console.log('Request body:', req.body);
+
+    console.log('File received:', {
+      filename: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    });
+
+    // Validate file type
+    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!validTypes.includes(req.file.mimetype)) {
+      console.error('Invalid file type:', req.file.mimetype);
+      return res.status(400).json({ error: 'Invalid file type. Please upload a PDF or Word document.' });
+    }
+
+    const party = req.body.party;
+    if (!party) {
+      console.error('No party information provided');
+      return res.status(400).json({ error: 'Party information is required' });
+    }
+
+    console.log('Processing document review:', {
+      filename: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      party
+    });
+
+    // Use the appropriate AI service for document review
+    const reviewResults = await wordwareService.reviewLegalDocument(req.file, party);
+    
+    console.log('Document review completed');
+    res.json(reviewResults);
+  } catch (error) {
+    console.error('Document review error:', {
+      message: error.message,
+      stack: error.stack,
+      details: error.response?.data
+    });
+    
+    if (error instanceof multer.MulterError) {
+      return res.status(400).json({ 
+        error: 'File upload error',
+        details: error.message
+      });
+    }
+    
+    res.status(500).json({ 
+      error: error.message || 'Failed to review document',
+      details: error.response?.data || error.stack
     });
   }
 });
