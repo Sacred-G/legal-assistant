@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import { motion, AnimatePresence } from 'framer-motion';
 import ChatInterface from './components/ChatInterface';
 import CaseLawResearcher from './components/CaseLawResearcher';
-import PDFProcessor from './components/PDFProcessor.jsx';
+import RateReports from './components/RateReports.jsx';
+import LegalDocumentGenerator from './components/LegalDocumentGenerator';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 function Navigation() {
@@ -41,7 +42,7 @@ function Navigation() {
         transition: animations.transition.normal
       }}
     >
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-[99%] mx-auto px-2">
         <div className="flex justify-between items-center h-16">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -57,7 +58,8 @@ function Navigation() {
           <div className="hidden md:flex items-center space-x-4">
             <NavLink to="/">Chat Interface</NavLink>
             <NavLink to="/case-law">Case Law Researcher</NavLink>
-            <NavLink to="/pdf-processor">PDF Processor</NavLink>
+            <NavLink to="/rate-reports">Rate Reports</NavLink>
+            <NavLink to="/legal-docs">Legal Document Generator</NavLink>
 
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -133,11 +135,18 @@ function Navigation() {
                   Case Law Researcher
                 </Link>
                 <Link
-                  to="/pdf-processor"
+                  to="/rate-reports"
                   className={`block px-3 py-2 rounded-md text-base font-medium ${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  PDF Processor
+                  Rate Reports
+                </Link>
+                <Link
+                  to="/legal-docs"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Legal Document Generator
                 </Link>
               </div>
             </motion.div>
@@ -153,22 +162,26 @@ function AppContent() {
   const location = useLocation();
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}>
+    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}
+      style={{
+        transition: theme.transition || 'background-color 0.2s ease-in-out'
+      }}>
       <Navigation />
-      <main className="flex-grow">
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="flex-1">
+        <div className="max-w-[99%] mx-auto py-2 px-1">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Routes>
                 <Route path="/" element={<ChatInterface />} />
                 <Route path="/case-law" element={<CaseLawResearcher />} />
-                <Route path="/pdf-processor" element={<PDFProcessor />} />
+                <Route path="/rate-reports" element={<RateReports />} />
+                <Route path="/legal-docs" element={<LegalDocumentGenerator />} />
               </Routes>
             </motion.div>
           </AnimatePresence>

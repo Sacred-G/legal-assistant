@@ -13,11 +13,23 @@ const pdrService = require('./services/pdrService');
 
 const app = express();
 
+// Serve static files from the React app in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'client/dist')));
+}
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Global error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
+
+// Configure CORS
+app.use(cors());
+
+// Body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Error handling middleware for multer
 const handleMulterError = (err, req, res, next) => {
@@ -57,36 +69,6 @@ const uploadMiddleware = (req, res) => {
 };
 
 app.use(handleMulterError);
-
-// Configure CORS with specific options
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://ai-legal-assistant-mmsq7zuay-sacredgs-projects.vercel.app'] 
-    : ['http://localhost:5173', 'http://127.0.0.1:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-  credentials: true,
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 600
-};
-
-app.use(cors(corsOptions));
-
-// Additional headers for file uploads
-app.use((req, res, next) => {
-  const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  next();
-});
-
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ extended: true, limit: '100mb' }));
-app.use(express.raw({ limit: '100mb' }));
 
 // Increase timeout for all routes
 app.use((req, res, next) => {
@@ -278,6 +260,50 @@ app.post('/api/assistants/chat', async (req, res) => {
   }
 });
 
+app.post('/api/generate-legal-document', async (req, res) => {
+  const { docName, purpose, law } = req.body;
+
+  if (!docName || !purpose || !law) {
+    return res.status(400).json({ error: 'Document name, purpose, and applicable law are required' });
+  }
+
+  try {
+    // Set headers for streaming response
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    console.log('Starting legal document generation...');
+
+    // Stream chunks as they arrive
+    await wordwareService.generateLegalDocument(
+      docName,
+      purpose,
+      law,
+      (chunk) => {
+        res.write(chunk);
+      }
+    );
+
+    // End the response when complete
+    res.end();
+  } catch (error) {
+    console.error('Legal document generation error:', error);
+    // Only send error if headers haven't been sent
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: error.message || 'Error generating legal document',
+        details: error.response?.data || error.stack
+      });
+    } else {
+      // If headers were sent, end the stream with an error message
+      res.write('\nError: ' + (error.message || 'Error generating legal document'));
+      res.end();
+    }
+  }
+});
+
 app.post('/api/case-law-research', async (req, res) => {
   const { query, jurisdiction, timeFrame, sources, includeKeywords, excludeKeywords } = req.body;
 
@@ -286,21 +312,42 @@ app.post('/api/case-law-research', async (req, res) => {
   }
 
   try {
-    const result = await wordwareService.performCaseLawResearch(
+    // Set headers for streaming response
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    console.log('Starting case law research...');
+
+    // Stream results as they arrive
+    await wordwareService.performCaseLawResearch(
       query,
       jurisdiction,
       timeFrame,
       sources,
       includeKeywords,
-      excludeKeywords
+      excludeKeywords,
+      (chunk) => {
+        res.write(JSON.stringify(chunk) + '\n');
+      }
     );
-    res.json(result);
+
+    // End the response when complete
+    res.end();
   } catch (error) {
     console.error('Case law research error:', error);
-    res.status(500).json({
-      error: error.message || 'Error performing case law research',
-      details: error.response?.data || error.stack
-    });
+    // Only send error if headers haven't been sent
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: error.message || 'Error performing case law research',
+        details: error.response?.data || error.stack
+      });
+    } else {
+      // If headers were sent, end the stream with an error message
+      res.write(JSON.stringify({ error: error.message || 'Error performing case law research' }));
+      res.end();
+    }
   }
 });
 
@@ -485,19 +532,15 @@ function validatePDRResponse(content) {
   };
 }
 
-const PORT = process.env.PORT || 4006;
-
+// Serve React app for any unknown routes in production
 if (process.env.NODE_ENV === 'production') {
-  const clientBuildPath = path.join(__dirname, 'client', 'dist');
-  app.use(express.static(clientBuildPath));
-  
-  // Handle React routing, return all requests to React app
   app.get('*', (req, res) => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
+    res.sendFile(path.join(__dirname, 'client/dist/index.html'));
   });
 }
 
+const PORT = process.env.PORT || 4006;
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log('Environment:', process.env.NODE_ENV);
 });

@@ -32,37 +32,55 @@ function CaseLawResearcher() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setResults([]);
+
     try {
-      const response = await api.post('/case-law-research', {
+      const response = await api.post('/api/case-law-research', {
         query,
         jurisdiction,
         timeFrame,
         sources,
         includeKeywords,
         excludeKeywords
+      }, {
+        responseType: 'text',
+        onDownloadProgress: (progressEvent) => {
+          const text = progressEvent.event.target.responseText;
+          const lines = text.split('\n').filter(line => line.trim());
+          
+          const newResults = lines.map(line => {
+            try {
+              const parsed = JSON.parse(line);
+              return parsed.results?.[0];
+            } catch (e) {
+              console.error('Error parsing line:', e);
+              return null;
+            }
+          }).filter(Boolean);
+
+          setResults(prevResults => {
+            const uniqueResults = [...prevResults];
+            newResults.forEach(newResult => {
+              if (!uniqueResults.some(r => r.url === newResult.url)) {
+                uniqueResults.push(newResult);
+              }
+            });
+            return uniqueResults;
+          });
+        }
       });
-      console.log('API Response:', response.data);
-      if (Array.isArray(response.data)) {
-        console.log('Setting results array:', response.data);
-        setResults(response.data);
-      } else if (response.data.results && Array.isArray(response.data.results)) {
-        console.log('Setting results from data.results:', response.data.results);
-        setResults(response.data.results);
-      } else {
-        console.log('Invalid response format:', response.data);
-        setResults({ error: 'Invalid response format from server' });
-      }
     } catch (error) {
       console.error('Error fetching results:', error);
       setResults({ error: 'An error occurred while fetching results. Please try again.' });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className={`max-w-3xl mx-auto ${isDark ? 'bg-gray-900/95 backdrop-blur-sm' : 'bg-white'} rounded-lg shadow-lg p-6 h-screen flex flex-col transition-colors duration-200`}>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>
+    <div className={`w-full max-w-full mx-auto ${isDark ? 'bg-gray-900/95 backdrop-blur-sm' : 'bg-white'} rounded-lg shadow-lg p-2 min-h-screen flex flex-col transition-colors duration-200`}>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+        <h2 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>
           Case Law & Statute Researcher
         </h2>
         <button
@@ -100,7 +118,7 @@ function CaseLawResearcher() {
             type="text"
             value={jurisdiction}
             onChange={(e) => setJurisdiction(e.target.value)}
-            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200`}
+            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-700 bg-gray-800/80 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors duration-200 backdrop-blur-sm`}
             placeholder="California"
             disabled={loading}
           />
@@ -111,7 +129,7 @@ function CaseLawResearcher() {
             type="text"
             value={timeFrame}
             onChange={(e) => setTimeFrame(e.target.value)}
-            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200`}
+            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-700 bg-gray-800/80 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors duration-200 backdrop-blur-sm`}
             placeholder="2010-2024"
             disabled={loading}
           />
@@ -122,7 +140,7 @@ function CaseLawResearcher() {
             type="text"
             value={sources}
             onChange={(e) => setSources(e.target.value)}
-            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200`}
+            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-700 bg-gray-800/80 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors duration-200 backdrop-blur-sm`}
             placeholder="Case Law, Statutes"
             disabled={loading}
           />
@@ -133,7 +151,7 @@ function CaseLawResearcher() {
             type="text"
             value={includeKeywords}
             onChange={(e) => setIncludeKeywords(e.target.value)}
-            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200`}
+            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-700 bg-gray-800/80 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors duration-200 backdrop-blur-sm`}
             disabled={loading}
           />
         </div>
@@ -143,7 +161,7 @@ function CaseLawResearcher() {
             type="text"
             value={excludeKeywords}
             onChange={(e) => setExcludeKeywords(e.target.value)}
-            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200`}
+            className={`mt-1 block w-full p-2 border ${isDark ? 'border-gray-700 bg-gray-800/80 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors duration-200 backdrop-blur-sm`}
             placeholder="Enter keywords to exclude (optional)"
             disabled={loading}
           />
@@ -161,14 +179,14 @@ function CaseLawResearcher() {
       </form>
       {loading && (
         <div className="mt-6 text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
           <p className={`mt-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Searching for relevant cases...</p>
         </div>
       )}
       {!loading && results && (
         <div className="mt-4 flex-1 overflow-auto">
           <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Results:</h3>
-          <div className={`${isDark ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-gray-100'} p-4 rounded-md whitespace-pre-wrap overflow-y-auto transition-colors duration-200`}>
+          <div className={`${isDark ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-gray-100'} p-2 rounded-md whitespace-pre-wrap overflow-y-auto transition-colors duration-200`}>
             {results.error && <p className="text-red-500">{results.error}</p>}
             {!results.error && Array.isArray(results) && results.length === 0 && (
               <p>No results found</p>
@@ -176,7 +194,7 @@ function CaseLawResearcher() {
             {!results.error && Array.isArray(results) && results.length > 0 && (
               <div className="space-y-6">
                 {results.map((result, index) => (
-                  <div key={index} className={`${isDark ? 'bg-gray-900/90 border-gray-700' : 'bg-white border-gray-200'} p-4 rounded-lg shadow-lg border backdrop-blur-sm transition-colors duration-200`}>
+                  <div key={index} className={`${isDark ? 'bg-gray-900/90 border-gray-700' : 'bg-white border-gray-200'} p-2 rounded-lg shadow-lg border backdrop-blur-sm transition-colors duration-200`}>
                     <h4 className={`text-lg font-semibold ${isDark ? 'text-blue-400' : 'text-blue-600'} mb-2`}>{result.title}</h4>
                     <div className="mb-2 overflow-hidden">
                       <a href={result.url} target="_blank" rel="noopener noreferrer"

@@ -1,3 +1,4 @@
+
 const OpenAI = require('openai');
 
 class AssistantsService {
@@ -119,60 +120,105 @@ Use the following files provided through code_interpreter for calculations:
 3. Age Adjustment (file-DhPyNr9jYkk1UJhYeeQP3C) - Contains age-based adjustment factors
 4. Impairment (file-PNRsx4BWRuJL9CWYpamVr7) - Contains impairment codes and values
 5. Occupational Groups (file-RjcgSLjqFbfCSvPumG3VWH) - Contains group definitions and variants
+You are a specialized workers' compensation analyst. When analyzing claims, you must follow this exact format and provide detailed calculations for each section:
 
-For each calculation:
-1. Read the relevant data from these files using code_interpreter. Use this code:
-   import pandas as pd
-   
-   # Read occupation data
-   occupations = pd.read_csv("file-89yc6ovmgoptStWro2ufZN")
-   # Read adjustment table
-   adjustments = pd.read_csv("file-5cnnAqJngm9jpF4QUUzpyt")
-   # Read age factors
-   age_factors = pd.read_csv("file-DhPyNr9jYkk1UJhYeeQP3C")
-   # Read impairment data
-   impairments = pd.read_csv("file-PNRsx4BWRuJL9CWYpamVr7")
-   # Read group data
-   groups = pd.read_csv("file-RjcgSLjqFbfCSvPumG3VWH")
+FORMAT REQUIREMENTS:
+1. Always analyze in this exact order:
+   - Basic Information
+   - Rating Calculations
+   - Combining Ratings
+   - Financial Calculations
+   - Future Medical Care
+   - Apportionment Analysis
+   - Settlement Recommendation
 
-2. Show the exact values being used from each file
-3. Display step-by-step calculations with Python code. Example:
-   # Calculate combined rating
-   def combine_ratings(a, b):
-       """Combine ratings using formula: a + b(1-a)"""
-       return a + (b * (1 - a))
-   
-   # Example: Combine 0.2 and 0.1 ratings
-   rating_1 = 0.2  # 20% from first impairment
-   rating_2 = 0.1  # 10% from second impairment
-   combined = combine_ratings(rating_1, rating_2)
-   print(f"Combined rating: {combined:.2%}")
-   
-   # Apply FEC adjustment
-   fec_multiplier = 1.4  # From post-2013 rules
-   fec_adjusted = combined * fec_multiplier
-   print(f"FEC adjusted: {fec_adjusted:.2%}")
+2. For each body part rating, use this format:
+   [Body Part]: [Apportionment]% - ([Code] - [WPI] - [1.4][Adjusted] - [Group] - [Standard] - [Final]%) [Clinical Description]
 
-4. Include file references and data sources in your explanation
+3. Show all rating combinations step by step with this format:
+   [First]% C [Second]% = [Result]%
 
-Please ensure your response includes all required elements in this exact format:
-- XX.XX.XX.XX (Impairment number)
-- FEC adjustment
-- GroupVariant
-- Combined Rating XX%
-- Total Weeks of PD XX
-- Age on DOI
-- Average Weekly Earnings
-- PD Weekly Rate
-- Total PD Payout
-- FM: Future medical needs
+REQUIRED SECTIONS:
 
-Follow these calculation rules:
-1. Combine ratings using formula: a + b(1-a) where a is larger value
-2. Add range of motion ratings for the same joint
-3. Combine different evaluation methods
-4. Show all calculations clearly with Python code`,
-                model: "gpt-4o",
+python
+                import json
+                    from typing import Dict, List, Any
+
+async def load_data():
+    # Load JSON files from storage
+                occupations_data = await window.fs.readFile('file-89yc6ovmgoptStWro2ufZN')
+                adjustments_data = await window.fs.readFile('file-5cnnAqJngm9jpF4QUUzpyt')
+                age_factors_data = await window.fs.readFile('file-DhPyNr9jYkk1UJhYeeQP3C')
+                impairments_data = await window.fs.readFile('file-PNRsx4BWRuJL9CWYpamVr7')
+                groups_data = await window.fs.readFile('file-RjcgSLjqFbfCSvPumG3VWH')
+
+    # Parse JSON data
+                occupations = json.loads(occupations_data)
+                adjustments = json.loads(adjustments_data)
+                age_factors = json.loads(age_factors_data)
+                impairments = json.loads(impairments_data)
+                groups = json.loads(groups_data)
+
+                return {
+                    'occupations': occupations,
+                    'adjustments': adjustments,
+                    'age_factors': age_factors,
+                    'impairments': impairments,
+                    'groups': groups
+                }
+
+CALCULATION FUNCTIONS:
+Include these core calculation functions:
+
+pythonCopydef combine_ratings(a: float, b: float) -> float:
+                """Combine two ratings using formula: a + b(1-a)"""
+                return a + (b * (1 - a))
+
+def apply_fec(wpi: float) -> float:
+                """Apply FEC adjustment (1.4 multiplier)"""
+                return wpi * 1.4
+
+def lookup_impairment(code: str, impairments: Dict) -> float:
+                """Find impairment value from code"""
+    # Implementation will depend on JSON structure
+                return impairments.get(code, 0.0)
+
+OUTPUT REQUIREMENTS:
+For each body part, show:
+
+                Copy[Body Part]:
+                - Impairment Code: [XX.XX.XX.XX]
+                    - WPI: [X] % (from impairments JSON)
+                - FEC: [X] % × 1.4 = [Y] %
+                    - Group: [XXX](from groups JSON)
+                        - Occupational Adjustment: [X](from adjustments JSON)
+                            - Age Adjustment: [X](from age_factors JSON)
+                                - Final Rating: [Z] %
+
+                                    Code used:
+                [Show the actual calculation code used]
+
+EXAMPLE OUTPUT FORMAT:
+Basic Information:
+                Name: [Name]
+Claim #: [Number]
+                [Rest of basic info]
+
+Rating Calculations:
+pythonCopy# Show actual code used for each calculation
+wpi = lookup_impairment("15.01.02.00", impairments)
+fec_adjusted = apply_fec(wpi)
+                occ_factor = lookup_occupation("470", adjustments)
+                final_rating = fec_adjusted * occ_factor
+                print(f"Final rating: {final_rating:.2%}")
+
+Medical Report Text:
+${pdfText}
+
+Additional Context:
+Occupation: ${occupation}
+Age: ${age}`,
+                model: "gpt-4o-mini",
                 tools: [
                     { type: "code_interpreter" },
                     {
@@ -479,7 +525,7 @@ Follow these calculation rules:
 
     async processMedicalReport(pdfText, occupation, age, maxRetries = 2) {
         let lastError = null;
-        
+
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
                 if (attempt > 0) {
@@ -489,76 +535,107 @@ Follow these calculation rules:
                 }
 
                 console.log('Processing medical report with Assistants API...');
-                
+
                 // Create a new thread
                 const thread = await this.createThread();
-                
+
                 // Add the initial message with PDF content and context
-                const message = `Please analyze this medical report for permanent disability rating and provide the response in the following JSON format:
+                const message = `You are a specialized workers' compensation analyst. When analyzing claims, you must follow this exact format and provide detailed calculations for each section:
 
-Medical Information:
-{
-    "name": "Patient Name",
-    "date_of_birth": "DOB",
-    "occupation": "${occupation}",
-    "date_of_injury": "DOI",
-    "claim_number": "Claim#",
-    "body_parts": [
-        {
-            "part": "Body Part Name",
-            "wpi_percentage": "XX",
-            "apportionment": "Description if any"
-        }
-    ]
-}
+FORMAT REQUIREMENTS:
+1. Always analyze in this exact order:
+   - Basic Information
+   - Rating Calculations
+   - Combining Ratings
+   - Financial Calculations
+   - Future Medical Care
+   - Apportionment Analysis
+   - Settlement Recommendation
 
-Occupation Analysis:
-{
-    "group_number": "X",
-    "body_parts": [
-        {
-            "part": "Body Part Name",
-            "variant": "X"
-        }
-    ]
-}
+2. For each body part rating, use this format:
+   [Body Part]: [Apportionment]% - ([Code] - [WPI] - [1.4][Adjusted] - [Group] - [Standard] - [Final]%) [Clinical Description]
+
+3. Show all rating combinations step by step with this format:
+   [First]% C [Second]% = [Result]%
+
+REQUIRED SECTIONS:
+
+python
+                import json
+                    from typing import Dict, List, Any
+
+async def load_data():
+    # Load JSON files from storage
+                occupations_data = await window.fs.readFile('file-89yc6ovmgoptStWro2ufZN')
+                adjustments_data = await window.fs.readFile('file-5cnnAqJngm9jpF4QUUzpyt')
+                age_factors_data = await window.fs.readFile('file-DhPyNr9jYkk1UJhYeeQP3C')
+                impairments_data = await window.fs.readFile('file-PNRsx4BWRuJL9CWYpamVr7')
+                groups_data = await window.fs.readFile('file-RjcgSLjqFbfCSvPumG3VWH')
+
+    # Parse JSON data
+                impairments = json.loads(impairments_data)
+                occupations = json.loads(occupations_data)
+                adjustments = json.loads(adjustments_data)
+                age_factors = json.loads(age_factors_data)
+                variants = json.loads(variants_data)
+
+                return {
+                    'impairments': impairments,
+                    'occupations': occupations,
+                    'adjustments': adjustments,
+                    'age_factors': age_factors,
+                    'variants': variants
+                }
+
+CALCULATION FUNCTIONS:
+Include these core calculation functions:
+
+def lookup_occupation(occupation_code: str, occupations: Dict) -> float:
+                """Find occupation and determine group number and variant based on impairment """
+                
+                return occupations.get(occupation_code, )
+
+def combine_ratings(a: float, b: float) -> float:
+                """Combine two ratings using formula: a + b(1-a)"""
+                return a + (b * (1 - a))
+
+def apply_fec(wpi: float) -> float:
+                """Apply FEC adjustment (1.4 multiplier)"""
+                return wpi * 1.4
+
+def lookup_impairment(code: str, impairments: Dict) -> float:
+                """Find impairment value from code"""
+    # Implementation will depend on JSON structure
+                return impairments.get(code, 0.0)
+
+OUTPUT REQUIREMENTS:
+For each body part, show:
+
+                Copy[Body Part]:
+                - Impairment Code: [XX.XX.XX.XX]
+                    - WPI: [X] % (from impairments JSON)
+                - FEC: [X] % × 1.4 = [Y] %
+                    - Group: [XXX](from groups JSON)
+                        - Occupational Adjustment: [X](from adjustments JSON)
+                            - Age Adjustment: [X](from age_factors JSON)
+                                - Final Rating: [Z] %
+
+                                    Code used:
+                [Show the actual calculation code used]
+
+EXAMPLE OUTPUT FORMAT:
+Basic Information:
+                Name: [Name]
+Claim #: [Number]
+                [Rest of basic info]
 
 Rating Calculations:
-{
-    "impairments": [
-        {
-            "description": "Impairment Description",
-            "code": "XX.XX",
-            "wpi": "XX",
-            "fec_adjusted": "XX",
-            "occupation_adjusted": "XX",
-            "age_adjusted": "XX"
-        }
-    ],
-    "combined_rating": "XX",
-    "combination_steps": [
-        "Step 1 description",
-        "Step 2 description"
-    ]
-}
-
-Final Rating:
-{
-    "name": "Patient Name",
-    "claim_number": "Claim#",
-    "ratings": [
-        {
-            "code": "XX.XX",
-            "wpi": "XX",
-            "fec": "1.XX",
-            "group_variant": "X",
-            "adjusted": "XX",
-            "final": "XX",
-            "description": "Rating description"
-        }
-    ],
-    "combined_rating": "XX"
-}
+pythonCopy# Show actual code used for each calculation
+wpi = lookup_impairment("15.01.02.00", impairments)
+fec_adjusted = apply_fec(wpi)
+                occ_factor = lookup_occupation("470", adjustments)
+                final_rating = fec_adjusted * occ_factor
+                print(f"Final rating: {final_rating:.2%}")
 
 Medical Report Text:
 ${pdfText}
@@ -568,25 +645,25 @@ Occupation: ${occupation}
 Age: ${age}`;
 
                 await this.addMessage(thread.id, message);
-                
+
                 // Run the assistant with specific instructions
                 const run = await this.runAssistant(thread.id, "", null);
-                
+
                 // Wait for and return the complete response
                 const response = await this.streamResponse(thread.id, run.id);
-                
+
                 if (response.content && response.content[0]) {
                     // Parse the assistant's response into the expected format
                     const analysisText = response.content[0].text.value;
                     return this.parseAssistantResponse(analysisText);
                 }
-                
+
                 throw new Error('No content in response');
 
             } catch (error) {
                 console.error(`Attempt ${attempt + 1} failed:`, error);
                 lastError = error;
-                
+
                 if (attempt === maxRetries) {
                     console.error('All retry attempts failed');
                     // On final failure, return a valid but empty structure
@@ -633,7 +710,7 @@ Age: ${age}`;
 
             // Extract sections using regex
             const sections = text.split(/\n\n(?=[A-Z])/);
-            
+
             // Parse Medical Information section
             const medicalSection = sections.find(s => s.includes('Medical Information'));
             if (medicalSection) {
@@ -695,11 +772,11 @@ Age: ${age}`;
             if (match) {
                 return JSON.parse(match[0]);
             }
-            
+
             // If no JSON found, parse key-value pairs
             const lines = text.split('\n');
             const result = {};
-            
+
             lines.forEach(line => {
                 const [key, ...values] = line.split(':').map(s => s.trim());
                 if (key && values.length) {
@@ -712,7 +789,7 @@ Age: ${age}`;
                     }
                 }
             });
-            
+
             return result;
         } catch {
             return {};

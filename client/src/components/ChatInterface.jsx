@@ -227,9 +227,9 @@ function ChatInterface() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`max-w-7xl mx-auto p-6 ${isDark ? 'bg-gray-900/95 backdrop-blur-sm' : 'bg-white'} rounded-lg`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className={`route-content w-full max-w-full mx-auto p-2 ${isDark ? 'bg-gray-900/95 backdrop-blur-sm' : 'bg-white'} rounded-lg flex flex-col h-[calc(100vh-6rem)]`}
       style={{
         boxShadow: theme.shadow.lg,
         transition: animations.transition.normal
@@ -238,7 +238,7 @@ function ChatInterface() {
       <h2 className={`text-2xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-800'}`}>Medical Report Analysis</h2>
 
       {/* Controls Section */}
-      <div className="grid grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 mb-6">
         <div>
           <label className={`block text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} mb-2`}>AI Provider</label>
           <select
@@ -288,25 +288,27 @@ function ChatInterface() {
 
       {/* Chat Messages Section */}
       <div
-        className={`${isDark ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-gray-50'} rounded-lg p-6 mb-6 h-[700px] overflow-y-auto`}
+        className={`${isDark ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-gray-50'} rounded-lg p-2 mb-4 flex-1 overflow-y-auto scroll-smooth`}
         style={{
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-          transition: animations.transition.normal
+          transition: animations.transition.normal,
+          minHeight: '600px',
+          height: 'calc(100vh - 300px)'
         }}
       >
         <AnimatePresence mode="popLayout">
           {messages.map((message, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, x: message.sender === 'user' ? 20 : -20, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
               className={`mb-4 ${message.sender === 'user' ? 'flex justify-end' : 'flex justify-start'}`}
             >
               <motion.div
                 whileHover={{ scale: 1.01 }}
-                className={`max-w-3xl rounded-lg p-4 relative ${message.sender === 'user'
+                className={`max-w-full sm:max-w-[98%] rounded-lg p-2 relative ${message.sender === 'user'
                   ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white ml-4 backdrop-blur-sm'
                   : isDark
                     ? 'bg-gray-900/90 border-gray-700 text-gray-200 backdrop-blur-sm'
@@ -384,7 +386,7 @@ function ChatInterface() {
       {/* Input Section */}
       <motion.form
         onSubmit={handleSubmit}
-        className="flex gap-4"
+        className="flex flex-col sm:flex-row gap-2 sm:gap-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function PDFProcessor() {
+export default function RateReports() {
     const [file, setFile] = useState(null);
     const [occupation, setOccupation] = useState('');
     const [age, setAge] = useState('');
@@ -219,8 +219,8 @@ export default function PDFProcessor() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
-            <h2 className="text-2xl font-bold mb-6">Workers' Compensation Document Processor</h2>
+        <div className="max-w-full mx-auto p-6">
+            <h2 className="text-2xl font-bold mb-6 text-gray-600">Rate Reports</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -238,7 +238,7 @@ export default function PDFProcessor() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-2" htmlFor="age">
+                        <label htmlFor="age" className="block text-sm font-medium text-gray-700">
                             Age
                         </label>
                         <input
@@ -246,7 +246,7 @@ export default function PDFProcessor() {
                             id="age"
                             value={age}
                             onChange={(e) => setAge(e.target.value)}
-                            className="w-full p-2 border rounded"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             placeholder="Enter age"
                         />
                     </div>
@@ -281,7 +281,7 @@ export default function PDFProcessor() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                         <span className="text-blue-600 hover:text-blue-800">
-                            {file ? file.name : 'Upload Medical Report (PDF)'}
+                            {file ? file.name : 'Scan Medical  Report (PDF)'}
                         </span>
                         <span className="text-sm text-gray-500">
                             Click or drag and drop
@@ -319,7 +319,7 @@ export default function PDFProcessor() {
 
             {response && (
                 <div className="mt-8 p-6 bg-white rounded-lg shadow">
-                    <h3 className="text-xl font-semibold mb-4">PDR Analysis Results</h3>
+                    <h3 className="text-xl font-semibold mb-4">Rating Results</h3>
                     {renderAnalysisResults()}
                 </div>
             )}
