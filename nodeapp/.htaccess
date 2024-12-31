@@ -1,9 +1,20 @@
 RewriteEngine On
-RewriteRule ^(.*)$ http://127.0.0.1:4006/$1 [P,L]
+RewriteBase /
 
-# Enable reverse proxy with timeout settings
-ProxyPass / http://127.0.0.1:4006/ timeout=300 Keepalive=On
-ProxyPassReverse / http://127.0.0.1:4006/
+# Handle API requests
+RewriteRule ^api/(.*)$ https://ai-legal-assistant.sbouldin.com/api/$1 [P,L]
+
+# If the request is for an existing file or directory, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# For all other requests, serve the React app's index.html
+RewriteRule ^ client/dist/index.html [L]
+
+# Enable reverse proxy settings for API
+ProxyPass /api/ https://ai-legal-assistant.sbouldin.com/api/ timeout=300 Keepalive=On
+ProxyPassReverse /api/ https://ai-legal-assistant.sbouldin.com/api/
 
 # Set headers for proxy
 RequestHeader set X-Forwarded-Proto "https"

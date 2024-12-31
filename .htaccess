@@ -9,8 +9,8 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     
-    # Serve index.html for all other routes (for client-side routing)
-    RewriteRule ^ index.html [QSA,L]
+    # Serve client/dist/index.html for all other routes (for client-side routing)
+    RewriteRule ^ client/dist/index.html [QSA,L]
 </IfModule>
 
 # Enable CORS
