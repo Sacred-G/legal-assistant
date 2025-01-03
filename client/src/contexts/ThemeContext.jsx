@@ -9,8 +9,8 @@ const themes = {
         },
         background: {
             main: '#ffffff',
-            secondary: '#f8fafc', // Slate-50
-            tertiary: '#f1f5f9', // Slate-100
+            secondary: '#ffffff',
+            tertiary: '#f8fafc', // Slate-50
         },
         text: {
             primary: '#0f172a', // Slate-900
@@ -32,8 +32,8 @@ const themes = {
         },
         background: {
             main: '#0f172a', // Slate-900
-            secondary: '#1e293b', // Slate-800
-            tertiary: '#334155', // Slate-700
+            secondary: '#1e1e1e', // Dark background
+            tertiary: '#2d2d2d', // Slightly lighter dark
         },
         text: {
             primary: '#f8fafc', // Slate-50
@@ -84,6 +84,19 @@ export function ThemeProvider({ children }) {
     const [isDark, setIsDark] = useState(getInitialTheme());
     const [theme, setTheme] = useState(isDark ? themes.dark : themes.light);
 
+    // Initialize theme on mount
+    useEffect(() => {
+        const root = window.document.documentElement;
+        const initialColorValue = getInitialTheme();
+        
+        root.classList.remove('light', 'dark');
+        root.classList.add(initialColorValue ? 'dark' : 'light');
+        
+        setIsDark(initialColorValue);
+        setTheme(initialColorValue ? themes.dark : themes.light);
+    }, []);
+
+    // Handle system theme changes
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const handleChange = (e) => {
@@ -91,24 +104,26 @@ export function ThemeProvider({ children }) {
             setIsDark(shouldBeDark);
             setTheme(shouldBeDark ? themes.dark : themes.light);
             localStorage.setItem('theme', shouldBeDark ? 'dark' : 'light');
-            document.documentElement.classList.toggle('dark', shouldBeDark);
+            
+            const root = window.document.documentElement;
+            root.classList.remove('light', 'dark');
+            root.classList.add(shouldBeDark ? 'dark' : 'light');
         };
 
         mediaQuery.addEventListener('change', handleChange);
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
-    // Set initial dark mode class
-    useEffect(() => {
-        document.documentElement.classList.toggle('dark', isDark);
-    }, []);
-
     const toggleTheme = () => {
+        const root = window.document.documentElement;
         setIsDark(prev => {
             const newTheme = !prev;
             localStorage.setItem('theme', newTheme ? 'dark' : 'light');
             setTheme(newTheme ? themes.dark : themes.light);
-            document.documentElement.classList.toggle('dark', newTheme);
+            
+            root.classList.remove('light', 'dark');
+            root.classList.add(newTheme ? 'dark' : 'light');
+            
             return newTheme;
         });
     };

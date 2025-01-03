@@ -5,9 +5,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "install-deps": "npm install && cd client && npm install",
+    "install-client": "cd client && npm install",
     "build": "cd client && npm run build",
-    "postinstall": "npm run install-deps && npm run build"
+    "postinstall": "npm run install-client && npm run build",
+    "predev": "kill-port 4006",
+    "dev": "concurrently \"nodemon server.js\" \"cd client && npm run dev\""
   },
   "engines": {
     "node": ">=18.0.0"
@@ -15,16 +17,19 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.16.0",
     "@google/generative-ai": "^0.1.1",
+    "axios": "^1.6.2",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "openai": "^4.24.1",
-    "pdf-parse": "^1.1.1",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
-    "concurrently": "^8.0.1",
+    "concurrently": "^8.2.2",
+    "kill-port": "^2.0.1",
     "nodemon": "^2.0.22"
   }
 }

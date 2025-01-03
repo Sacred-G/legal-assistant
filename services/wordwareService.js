@@ -21,7 +21,7 @@ const generateLegalDocument = async (docName, purpose, law, onChunk) => {
         version: "^1.0"
       },
       headers: {
-        'Authorization': process.env.WORDWARE_API_KEY,
+        'Authorization': `Bearer ${process.env.WORDWARE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       responseType: 'stream'
@@ -107,7 +107,7 @@ const performCaseLawResearch = async (query, jurisdiction, timeFrame, sources, i
         version: "^1.0"
       },
       headers: {
-        'Authorization': process.env.WORDWARE_API_KEY,
+        'Authorization': `Bearer ${process.env.WORDWARE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       responseType: 'stream'
@@ -197,7 +197,7 @@ const reviewLegalDocument = async (file, party) => {
     try {
       await axios.get('https://app.wordware.ai/api/apps', {
         headers: {
-          'Authorization': apiKey,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         }
       });
@@ -222,7 +222,7 @@ const reviewLegalDocument = async (file, party) => {
     // Upload file to Vercel Blob Storage through Wordware
     const uploadResponse = await axios.post('https://app.wordware.ai/api/upload', formData, {
       headers: {
-        'Authorization': process.env.WORDWARE_API_KEY,
+        'Authorization': `Bearer ${process.env.WORDWARE_API_KEY}`,
         ...formData.getHeaders()
       }
     });
@@ -253,7 +253,7 @@ const reviewLegalDocument = async (file, party) => {
         version: "^1.0"
       },
       headers: {
-        'Authorization': process.env.WORDWARE_API_KEY,
+        'Authorization': `Bearer ${process.env.WORDWARE_API_KEY}`,
         'Content-Type': 'application/json'
       },
       responseType: 'stream'

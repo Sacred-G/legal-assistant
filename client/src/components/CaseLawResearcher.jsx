@@ -35,7 +35,7 @@ function CaseLawResearcher() {
     setResults([]);
 
     try {
-      const response = await api.post('/api/case-law-research', {
+      const response = await api.post('/api/case-law/research', {
         query,
         jurisdiction,
         timeFrame,

@@ -1,0 +1,33 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@0.6.2", "/Volumes/DevDrive/caselaw/ai-legal-assistant/uploads"],
+      "env": {}
+    },
+    "system": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {}
+    },
+    "google-search": {
+      "command": "node",
+      "args": ["/Volumes/DevDrive/mcp-servers/google-search-server/build/index.js"],
+      "env": {
+        "GOOGLE_API_KEY": "AIzaSyCHLJSTsOXRvmdP6jYgylbXXgeZ08dQM0I",
+        "GOOGLE_SEARCH_ENGINE_ID": "26895bc2065c0470e"
+      }
+    },
+    "shell": {
+      "command": "node",
+      "args": ["/Users/steven/Documents/Cline/MCP/shell-server/build/index.js"],
+      "env": {
+        "ALLOWED_DIR": "/Users/steven/ezlegal_assistant",
+        "ALLOWED_COMMANDS": "ls,cat,pwd,node,npm,git",
+        "ALLOWED_FLAGS": "-l,-a,--help,--version,run,install,add,commit,push,pull",
+        "MAX_COMMAND_LENGTH": "1024",
+        "COMMAND_TIMEOUT": "30"
+      }
+    }
+  }
+}

@@ -18,7 +18,7 @@ async function generateResponse(message, context) {
       }
     });
 
-    const prompt = `You are a medical-legal report analyzer. When presented with a medical report, carefully extract and summarize all available information, even if it requires careful reading between sections. Look for information throughout the entire report as important details may be mentioned in different sections.
+    const prompt = `You are a California Workers' Compensation permanent disability rating expert. Using your knowledge of the California PDRS 2005 edition and AMA Guidelines, analyze medical reports and generate detailed impairment ratings. Pay special attention to WPI ratings, work restrictions, future medical needs, and apportionment determinations.
 
 When analyzing a medical-legal report, extract and summarize the available information in a clear, organized format. If information is missing, reason and think about it. It may be presented in slightly different terminology, but also consider implicit information that can be reasonably inferred from the context. For example, Injurys, impairment, and body part might mean the same thing.
 

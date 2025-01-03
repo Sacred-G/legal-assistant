@@ -86,13 +86,15 @@ function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [context, setContext] = useState('');
-  const [provider, setProvider] = useState('openai');
+  const [provider, setProvider] = useState('o1');
   const [fileId, setFileId] = useState(null);
 
   // Effect to trigger initial analysis when context is set
   useEffect(() => {
     if (context) {
-      const analysisPrompt = "Please provide a detailed analysis of this medical report, including all key findings, diagnoses, treatment recommendations, and any notable medical-legal considerations.";
+      const analysisPrompt = provider === 'o1' 
+        ? "Be Patient. Im rating this report using the Schedule for Permanent Disability (PDRS) 2005 Edition and AMA Guidelines."
+        : "Please provide a detailed analysis of this medical report, including all key findings, diagnoses, treatment recommendations, and any notable medical-legal considerations.";
       handleSubmit(null, analysisPrompt);
     }
   }, [context, provider, fileId]);
@@ -118,7 +120,7 @@ function ChatInterface() {
 
       setFile(selectedFile);
       const formData = new FormData();
-      formData.append('pdf', selectedFile);
+      formData.append('file', selectedFile);
       console.log('Uploading file to /api/chat/upload...');
 
       try {
@@ -242,10 +244,10 @@ function ChatInterface() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={`route-content w-full max-w-full mx-auto p-2 ${isDark ? 'bg-gray-900/95 backdrop-blur-sm' : 'bg-white'} rounded-lg flex flex-col h-[calc(100vh-6rem)]`}
+      className={`route-content w-full max-w-full mx-auto p-2 rounded-lg flex flex-col h-[calc(100vh-6rem)]`}
       style={{
         boxShadow: theme.shadow.lg,
-        transition: animations.transition.normal
+        backgroundColor: 'var(--background-main)'
       }}
     >
       <h2 className={`text-2xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-800'}`}>Medical Report Analysis</h2>
@@ -253,7 +255,12 @@ function ChatInterface() {
       {/* Controls Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 mb-6">
         <div>
-          <label className={`block text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} mb-2`}>AI Provider</label>
+          <label className={`block text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} mb-2`} title="Choose an AI provider for medical report analysis:
+• OpenAI GPT-o1-model: Specialized for workers' comp ratings
+• OpenAI GPT-4o: General medical report analysis
+• Anthropic Claude: Enhanced medical terminology understanding
+• Google Gemini: Comprehensive report summarization
+• PDR Specialist: Advanced assistant with built-in PDRS calculations and reference data">AI Provider (hover for info)</label>
           <select
             value={provider}
             onChange={(e) => {
@@ -261,7 +268,7 @@ function ChatInterface() {
               setFileId(null);
               if (e.target.value === 'assistants' && file) {
                 const formData = new FormData();
-                formData.append('pdf', file);
+                formData.append('file', file);
                 api.post('/api/process-pdf', formData, {
                   headers: { 'Content-Type': 'multipart/form-data' },
                 }).then(response => {
@@ -278,10 +285,11 @@ function ChatInterface() {
               : 'bg-white border-gray-300 text-gray-900'
               } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
           >
-            <option value="openai">OpenAI GPT-4</option>
+            <option value="o1">OpenAI GPT-o1-model</option>
+            <option value="openai">OpenAI GPT-4o</option>
             <option value="anthropic">Anthropic Claude</option>
             <option value="gemini">Google Gemini</option>
-            <option value="assistants">Assistants Service</option>
+            <option value="assistants">OpenAI Assistant (PDR Specialist)</option>
           </select>
         </div>
 
@@ -301,12 +309,12 @@ function ChatInterface() {
 
       {/* Chat Messages Section */}
       <div
-        className={`${isDark ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-gray-50'} rounded-lg p-2 mb-4 flex-1 overflow-y-auto scroll-smooth`}
+        className="rounded-lg p-2 mb-4 flex-1 overflow-y-auto scroll-smooth"
         style={{
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-          transition: animations.transition.normal,
+          boxShadow: theme.shadow.lg,
           minHeight: '600px',
-          height: 'calc(100vh - 300px)'
+          height: 'calc(100vh - 300px)',
+          backgroundColor: 'var(--background-secondary)'
         }}
       >
         <AnimatePresence mode="popLayout">
@@ -322,9 +330,9 @@ function ChatInterface() {
               <motion.div
                 whileHover={{ scale: 1.01 }}
                 className={`max-w-full sm:max-w-[98%] rounded-lg p-2 relative ${message.sender === 'user'
-                  ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white ml-4 backdrop-blur-sm'
+                  ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white ml-4'
                   : isDark
-                    ? 'bg-gray-900/90 border-gray-700 text-gray-200 backdrop-blur-sm'
+                    ? 'bg-gray-900 border-gray-700 text-gray-200'
                     : 'bg-white'
                   }`}
                 style={{

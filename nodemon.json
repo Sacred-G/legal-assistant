@@ -1,0 +1,8 @@
+{
+  "ignore": ["client/*", "node_modules/*"],
+  "delay": "2500",
+  "events": {
+    "restart": "kill-port 4006",
+    "crash": "kill-port 4006"
+  }
+}

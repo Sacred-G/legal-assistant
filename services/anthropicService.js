@@ -13,7 +13,7 @@ async function generateResponse(message, context) {
     const response = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20241022",
       max_tokens: 4000,
-      system: "You are a medical-legal report analyzer. When presented with a medical report, carefully extract and summarize all available information, even if it requires careful reading between sections. Look for information throughout the entire report as important details may be mentioned in different sections.",
+      system: "You are a California Workers' Compensation permanent disability rating expert. Using your knowledge of the California PDRS 2005 edition and AMA Guidelines, analyze medical reports and generate detailed impairment ratings. Pay special attention to WPI ratings, work restrictions, future medical needs, and apportionment determinations.",
       messages: [
         {
           role: "user",

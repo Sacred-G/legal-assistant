@@ -6,6 +6,9 @@ import CaseLawResearcher from './components/CaseLawResearcher';
 import RateReports from './components/RateReports.jsx';
 import LegalDocumentGenerator from './components/LegalDocumentGenerator';
 import LegalDocumentReview from './components/LegalDocumentReview';
+import SystemAssistant from './components/SystemAssistant';
+import CloneInterface from './components/CloneInterface';
+import IframePage from './components/IframePage';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 function Navigation() {
@@ -37,8 +40,10 @@ function Navigation() {
 
   return (
     <nav
-      className={`${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
+      className="shadow-lg"
       style={{
+        backgroundColor: isDark ? theme.background.secondary : theme.background.main,
+        color: theme.text.primary,
         boxShadow: theme.shadow.md,
         transition: animations.transition.normal
       }}
@@ -62,6 +67,9 @@ function Navigation() {
             <NavLink to="/rate-reports">Rate Reports</NavLink>
             <NavLink to="/legal-docs">Legal Document Generator</NavLink>
             <NavLink to="/doc-review">Legal Document Review</NavLink>
+            <NavLink to="/system">System Assistant</NavLink>
+            <NavLink to="/clone">Clone Interface</NavLink>
+            <NavLink to="/iframe">Iframe Page</NavLink>
 
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -157,6 +165,27 @@ function Navigation() {
                 >
                   Legal Document Review
                 </Link>
+                <Link
+                  to="/system"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  System Assistant
+                </Link>
+                <Link
+                  to="/clone"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Clone Interface
+                </Link>
+                <Link
+                  to="/iframe"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Iframe Page
+                </Link>
               </div>
             </motion.div>
           )}
@@ -167,17 +196,18 @@ function Navigation() {
 }
 
 function AppContent() {
-  const { isDark, theme } = useTheme();
+  const { isDark, theme, animations } = useTheme();
   const location = useLocation();
 
   return (
-    <div className={`h-full ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}
+    <div 
+      className="min-h-screen flex flex-col"
       style={{
-        transition: theme.transition || 'background-color 0.2s ease-in-out'
+        backgroundColor: theme.background.main
       }}>
       <Navigation />
-      <main className="flex-1">
-        <div className="max-w-[99%] mx-auto py-2 px-1">
+      <main className="flex-1 flex flex-col">
+        <div className="flex-1 max-w-[99%] mx-auto py-2 px-1">
           <Routes>
             <Route
               path="/"
@@ -241,6 +271,45 @@ function AppContent() {
                   exit={{ opacity: 0 }}
                 >
                   <LegalDocumentReview />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/system"
+              element={
+                <motion.div
+                  key="system"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <SystemAssistant />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/clone"
+              element={
+                <motion.div
+                  key="clone"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <CloneInterface />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/iframe"
+              element={
+                <motion.div
+                  key="iframe"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <IframePage />
                 </motion.div>
               }
             />

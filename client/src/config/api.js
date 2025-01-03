@@ -12,3 +12,35 @@ const getApiUrl = () => {
 };
 
 export const API_URL = getApiUrl();
+
+export const sendCloneMessage = async (message) => {
+  const response = await fetch(`${API_URL}/api/clone`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to send message');
+  }
+
+  return response.text();
+};
+
+export const sendSystemMessage = async (message) => {
+  const response = await fetch(`${API_URL}/api/system`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to send message');
+  }
+
+  return response.text();
+};
